@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+
+    environment {
+        NODE_OPTIONS = '--openssl-legacy-provider'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the code from the repository
+                git branch :'main', url: 'https://github.com/Gouse323/mock-company-webapp.git', credentialsId:'Gouse323'
+
+            }
+        }
+
+        stage('Build Frontend') {
+            steps {
+                dir('client-app') {
+                    bat 'yarn install'
+                    bat 'yarn build'
+                }
+            }
+        }
+
+        stage('Build Backend') {
+            steps {
+                bat './gradlew assemble'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                bat './gradlew test'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Build and tests succeeded!'
+        }
+        failure {
+            echo 'Build or tests failed.'
+        }
+    }
+}
